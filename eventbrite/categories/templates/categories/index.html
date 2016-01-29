@@ -1,0 +1,7 @@
+<h1> Categories </h1>
+<h2> Select the top three categories in which you're interested: </h2>
+<ul>
+	{% for category in categories %}
+		<li>{{ category.name }}</li>
+	{% endfor %}
+</ul>
