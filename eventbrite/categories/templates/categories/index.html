@@ -1,7 +1,8 @@
 <h1> Categories </h1>
 <h2> Select the top three categories in which you're interested: </h2>
-<ul>
+<form action="{% url 'categories:events' %}" method="get">
 	{% for category in categories %}
-		<li>{{ category.name }}</li>
+		<input type="checkbox" name="category" value="{{ category.id }}"> {{ category.name }} <br>
 	{% endfor %}
-</ul>
+	<button type="submit">Submit</button>
+</form>

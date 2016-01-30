@@ -1,0 +1,9 @@
+<h1> Events that may interest you: </h1>
+{% for event in events %}
+	<div>
+		<h3><a href="{{ event.url }}" target="_blank">{{ event.name.text }}</a></h3>
+		<img src="{{ event.logo.url }}">
+		<h3><strong>Description</strong></h3>
+		<p>{{ event.description.text }}</p>
+	</div>
+{% endfor %}
