@@ -5,6 +5,11 @@
 {% block content %}
 <h1> Categories </h1>
 <h2> Select your top 3 event categories: </h2>
+{% if messages %}
+	{% for message in messages %}
+		<div class="alert alert-danger" role="alert">{{ message }}</div>
+	{% endfor %}
+{% endif %}
 <form action="{% url 'categories:events' %}" method="get" style="margin-bottom:15px">
 		{% for category in categories %}
 			<div class="checkbox">

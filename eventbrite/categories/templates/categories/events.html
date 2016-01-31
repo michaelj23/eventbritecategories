@@ -6,15 +6,11 @@
 <h1> Events that may interest you: </h1>
 <nav>
 	<ul class="pagination">
-		{% if prevPage == -1 %}
-			<li class="disabled">
-		{% else %}
-			<li>
-		{% endif %}
-				<a href="#" aria-label="Previous" class="diffpage" data-pagenum="{{ prevPage }}">
-					<span aria-hidden="true">&laquo;</span>
-				</a>
-			</li>
+		<li{% if prevPage == -1 %} class="disabled"{% endif %}>
+			<a href="#" aria-label="Previous" class="diffpage" data-pagenum="{{ prevPage }}">
+				<span aria-hidden="true">&laquo;</span>
+			</a>
+		</li>
 		{% for pageNum in pageDisplays %}
 			{% if pageNum == curPage %}
 				<li class="active">
@@ -24,15 +20,11 @@
 				<li><a href="#" class="diffpage" data-pagenum="{{ pageNum }}">{{ pageNum }}</a></li>
 			{% endif %}
 		{% endfor %}
-		{% if nextPage == -1 %}
-			<li class="disabled">
-		{% else %}
-			<li>
-		{% endif %}
-				<a href="#" aria-label="Next" class="diffpage" data-pagenum="{{ nextPage }}">
-					<span aria-hidden="true">&raquo;</span>
-				</a>
-			</li>
+		<li{% if nextPage == -1 %}class="disabled"{% endif %}>
+			<a href="#" aria-label="Next" class="diffpage" data-pagenum="{{ nextPage }}">
+				<span aria-hidden="true">&raquo;</span>
+			</a>
+		</li>
 	</ul>
 </nav>
 
@@ -81,14 +73,18 @@
 	</ul>
 </nav>
 <script>
+	var categoryIds = [];
+	{% for category in categories %}
+		categoryIds.push({{ category }});
+	{% endfor %}
 	$(".diffpage").click(function() {
 		var targetPage = Number($(this).attr("data-pagenum"));
 		if (targetPage != -1) {
 			var params = {
-				category: {{ categories }},
+				category: categoryIds,
 				page: targetPage
 			};
-			window.location.href = "/events/?" + $.param(params);
+			window.location.href = "/events/?" + $.param(params, true);
 		}
 	});
 </script>

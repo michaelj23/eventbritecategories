@@ -71,6 +71,12 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'eventbrite.wsgi.application'
 
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache'
+    }
+}
+
 
 # Database
 # https://docs.djangoproject.com/en/1.9/ref/settings/#databases

@@ -1,39 +1,50 @@
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
 from django.core.urlresolvers import reverse
+from django.contrib import messages
+from django.core.cache import cache
 
 import requests
 # Create your views here.
 def error(request, status):
 	return render(request, 'categories/error.html', {'status': status})
 
+REQUIRED_NUM_CATEGORIES = 3
+
 def index(request):
-	# TODO: error messages, check that user only chooses 3 events
-	try: 
-		response = requests.get(
-			'https://www.eventbriteapi.com/v3/categories/',
-			headers = {
-				'Authorization': 'Bearer 56UBOZLZ4CLCT7JWUQ76'
-			},
-			verify = True
-		)
-		response.raise_for_status()
-	except requests.exceptions.HTTPError:
-		return HttpResponseRedirect(reverse('categories:error', args=(response.status_code,)))			
-	return render(request, 'categories/index.html', {'categories': response.json()['categories']})
+	responseJSON = cache.get('index')
+	if not responseJSON:
+		try: 
+			response = requests.get(
+				'https://www.eventbriteapi.com/v3/categories/',
+				headers = {
+					'Authorization': 'Bearer 56UBOZLZ4CLCT7JWUQ76'
+				},
+				verify = True
+			)
+			response.raise_for_status()
+			responseJSON = response.json()
+			cache.set('index', responseJSON, 60 * 30)
+		except requests.exceptions.HTTPError:
+			return HttpResponseRedirect(reverse('categories:error', args=(response.status_code,)))			
+	return render(request, 'categories/index.html', {'categories': responseJSON['categories']})
 
 PAGINATION_LIMIT = 5
 
+# TODO: sort by date, maybe try to show events' times in user's timezone?
+
 def events(request):
-	parameters = {}
-	categories = []
-	if 'category' in request.GET:
-		categories = request.GET['category']
-		parameters['categories'] = categories
-	# TODO: sort by date, maybe try to show events' times in user's timezone?
-	# TODO: cache pages
+	if 'category' not in request.GET or len(request.GET.getlist('category')) != REQUIRED_NUM_CATEGORIES:
+		messages.error(request, 'Please select %d categories.' % REQUIRED_NUM_CATEGORIES)
+		return HttpResponseRedirect(reverse('categories:index'))
+	categories = request.GET.getlist('category')
+	parameters = {
+		'categories': categories
+	}
 	if 'page' in request.GET:
 		parameters['page'] = request.GET['page']
+	else:
+		parameters['page'] = 1 # cache the first page more consistently by making its URL consistent
 	try:
 		response = requests.get(
 			'https://www.eventbriteapi.com/v3/events/search/',
@@ -53,7 +64,7 @@ def events(request):
 	firstPageDisplay = max(PAGINATION_LIMIT * ((curPage - 1) // PAGINATION_LIMIT) + 1, 1)
 	lastPageDisplay = min(firstPageDisplay + PAGINATION_LIMIT - 1, pagination['page_count'])
 	if firstPageDisplay != 1:
-		prevPage = firstPageDisplay - 1
+		prevPage = firstPageDisplay - PAGINATION_LIMIT
 	if lastPageDisplay < pagination['page_count']:
 		nextPage = lastPageDisplay + 1
 	error = ''
