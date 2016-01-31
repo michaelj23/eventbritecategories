@@ -1,9 +1,95 @@
+{% extends "categories/header.html" %}
+
+{% block title %} Relevant Events {% endblock %}
+
+{% block content %}
 <h1> Events that may interest you: </h1>
-{% for event in events %}
-	<div>
-		<h3><a href="{{ event.url }}" target="_blank">{{ event.name.text }}</a></h3>
-		<img src="{{ event.logo.url }}">
-		<h3><strong>Description</strong></h3>
-		<p>{{ event.description.text }}</p>
-	</div>
-{% endfor %}
+<nav>
+	<ul class="pagination">
+		{% if prevPage == -1 %}
+			<li class="disabled">
+		{% else %}
+			<li>
+		{% endif %}
+				<a href="#" aria-label="Previous" class="diffpage" data-pagenum="{{ prevPage }}">
+					<span aria-hidden="true">&laquo;</span>
+				</a>
+			</li>
+		{% for pageNum in pageDisplays %}
+			{% if pageNum == curPage %}
+				<li class="active">
+					<span>{{ pageNum }} <span class="sr-only">(current)</span></span>
+				</li>
+			{% else %}
+				<li><a href="#" class="diffpage" data-pagenum="{{ pageNum }}">{{ pageNum }}</a></li>
+			{% endif %}
+		{% endfor %}
+		{% if nextPage == -1 %}
+			<li class="disabled">
+		{% else %}
+			<li>
+		{% endif %}
+				<a href="#" aria-label="Next" class="diffpage" data-pagenum="{{ nextPage }}">
+					<span aria-hidden="true">&raquo;</span>
+				</a>
+			</li>
+	</ul>
+</nav>
+
+{% if error %}
+	<div class="alert alert-danger" role="alert">{{ error }}</div>
+{% else %}
+	{% for event in events %}
+		<div>
+			<h3><a href="{{ event.url }}" target="_blank">{{ event.name.text }}</a></h3>
+			<img src="{{ event.logo.url }}">
+			<h3><strong>Description</strong></h3>
+			<p>{{ event.description.text }}</p>
+		</div>
+	{% endfor %}
+{% endif %}
+
+<nav>
+	<ul class="pagination">
+		{% if prevPage == -1 %}
+			<li class="disabled">
+		{% else %}
+			<li>
+		{% endif %}
+				<a href="#" aria-label="Previous" class="diffpage" data-pagenum="{{ prevPage }}">
+					<span aria-hidden="true">&laquo;</span>
+				</a>
+			</li>
+		{% for pageNum in pageDisplays %}
+			{% if pageNum == curPage %}
+				<li class="active">
+					<span>{{ pageNum }} <span class="sr-only">(current)</span></span>
+				</li>
+			{% else %}
+				<li><a href="#" class="diffpage" data-pagenum="{{ pageNum }}">{{ pageNum }}</a></li>
+			{% endif %}
+		{% endfor %}
+		{% if nextPage == -1 %}
+			<li class="disabled">
+		{% else %}
+			<li>
+		{% endif %}
+				<a href="#" aria-label="Next" class="diffpage" data-pagenum="{{ nextPage }}">
+					<span aria-hidden="true">&raquo;</span>
+				</a>
+			</li>
+	</ul>
+</nav>
+<script>
+	$(".diffpage").click(function() {
+		var targetPage = Number($(this).attr("data-pagenum"));
+		if (targetPage != -1) {
+			var params = {
+				category: {{ categories }},
+				page: targetPage
+			};
+			window.location.href = "/events/?" + $.param(params);
+		}
+	});
+</script>
+{% endblock %}

@@ -1,8 +1,18 @@
+{% extends "categories/header.html" %}
+
+{% block title %} Select categories {% endblock %}
+
+{% block content %}
 <h1> Categories </h1>
-<h2> Select the top three categories in which you're interested: </h2>
-<form action="{% url 'categories:events' %}" method="get">
-	{% for category in categories %}
-		<input type="checkbox" name="category" value="{{ category.id }}"> {{ category.name }} <br>
-	{% endfor %}
-	<button type="submit">Submit</button>
+<h2> Select your top 3 event categories: </h2>
+<form action="{% url 'categories:events' %}" method="get" style="margin-bottom:15px">
+		{% for category in categories %}
+			<div class="checkbox">
+				<label>
+					<input type="checkbox" name="category" value="{{ category.id }}"> {{ category.name }}
+				</label>
+			</div>
+		{% endfor %}
+		<button type="submit" class="btn btn-success">Submit</button>
 </form>
+{% endblock %}
