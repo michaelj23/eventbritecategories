@@ -3,15 +3,13 @@ from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
 from django.core.urlresolvers import reverse
 from django.contrib import messages
 from django.core.cache import cache
+from django.conf import settings
 
 import requests
 
 """ View for bad API requests """
 def error(request, status):
 	return render(request, 'categories/error.html', {'status': status})
-
-""" User must select this number of categories from the index page """
-REQUIRED_NUM_CATEGORIES = 3
 
 """ Index view. Sends request to Eventbrite API for list of categories. This request's JSON response
 is cached for 30 minutes """
@@ -22,7 +20,7 @@ def index(request):
 			response = requests.get(
 				'https://www.eventbriteapi.com/v3/categories/',
 				headers = {
-					'Authorization': 'Bearer 56UBOZLZ4CLCT7JWUQ76'
+					'Authorization': 'Bearer %s' % settings.API_KEY
 				},
 				verify = True
 			)
@@ -35,13 +33,13 @@ def index(request):
 
 # TODO: sort by date, maybe try to show events' times in user's timezone?
 
-""" Events view. Cached in urls.py. Sends request to Eventbrite API for the HTTP request's
+""" Events view. Cached in urls.py for 5 minutes. Sends request to Eventbrite API for the HTTP request's
 desired list of categories and page number. If no page number, the Eventbrite API defaults to page 1.
 Sends response (list of events), categories requested, page number requested, and total number of pages
 to template """ 
 def events(request):
-	if 'category' not in request.GET or len(request.GET.getlist('category')) != REQUIRED_NUM_CATEGORIES:
-		messages.error(request, 'Please select %d categories.' % REQUIRED_NUM_CATEGORIES)
+	if 'category' not in request.GET or len(request.GET.getlist('category')) != settings.REQUIRED_NUM_CATEGORIES:
+		messages.error(request, 'Please select %d categories.' % settings.REQUIRED_NUM_CATEGORIES)
 		return HttpResponseRedirect(reverse('categories:index'))
 	categories = request.GET.getlist('category')
 	parameters = {
@@ -54,7 +52,7 @@ def events(request):
 			'https://www.eventbriteapi.com/v3/events/search/',
 			params = parameters,
 			headers = {
-				'Authorization': 'Bearer 56UBOZLZ4CLCT7JWUQ76'		
+				'Authorization': 'Bearer %s' % settings.API_KEY		
 			},
 			verify = True
 		)	
