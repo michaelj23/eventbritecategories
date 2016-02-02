@@ -5,12 +5,16 @@ from django.contrib import messages
 from django.core.cache import cache
 
 import requests
-# Create your views here.
+
+""" View for bad API requests """
 def error(request, status):
 	return render(request, 'categories/error.html', {'status': status})
 
+""" User must select this number of categories from the index page """
 REQUIRED_NUM_CATEGORIES = 3
 
+""" Index view. Sends request to Eventbrite API for list of categories. This request's JSON response
+is cached for 30 minutes """
 def index(request):
 	responseJSON = cache.get('index')
 	if not responseJSON:
@@ -29,10 +33,12 @@ def index(request):
 			return HttpResponseRedirect(reverse('categories:error', args=(response.status_code,)))			
 	return render(request, 'categories/index.html', {'categories': responseJSON['categories']})
 
-PAGINATION_LIMIT = 5
-
 # TODO: sort by date, maybe try to show events' times in user's timezone?
 
+""" Events view. Cached in urls.py. Sends request to Eventbrite API for the HTTP request's
+desired list of categories and page number. If no page number, the Eventbrite API defaults to page 1.
+Sends response (list of events), categories requested, page number requested, and total number of pages
+to template """ 
 def events(request):
 	if 'category' not in request.GET or len(request.GET.getlist('category')) != REQUIRED_NUM_CATEGORIES:
 		messages.error(request, 'Please select %d categories.' % REQUIRED_NUM_CATEGORIES)
@@ -57,14 +63,7 @@ def events(request):
 		return HttpResponseRedirect(reverse('categories:error', args=(response.status_code,)))	
 	responseJSON = response.json()
 	pagination, events = responseJSON['pagination'], responseJSON['events']
-	prevPage, nextPage = -1, -1
 	curPage = pagination['page_number']
-	firstPageDisplay = max(PAGINATION_LIMIT * ((curPage - 1) // PAGINATION_LIMIT) + 1, 1)
-	lastPageDisplay = min(firstPageDisplay + PAGINATION_LIMIT - 1, pagination['page_count'])
-	if firstPageDisplay != 1:
-		prevPage = firstPageDisplay - PAGINATION_LIMIT
-	if lastPageDisplay < pagination['page_count']:
-		nextPage = lastPageDisplay + 1
 	error = ''
 	if len(events) == 0:
 		error = 'No events found. Try choosing different categories!'
@@ -73,7 +72,5 @@ def events(request):
 		'error': error,
 		'events': events,
 		'curPage': curPage,
-		'prevPage': prevPage,
-		'nextPage': nextPage,
-		'pageDisplays': range(firstPageDisplay, lastPageDisplay + 1)
+		'pageCount': pagination['page_count']
 	})

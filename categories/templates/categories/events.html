@@ -1,36 +1,34 @@
+<!-- Template for relevant events page -->
 {% extends "categories/header.html" %}
 
 {% block title %} Relevant Events {% endblock %}
 
 {% block content %}
 <h1> Events that may interest you: </h1>
+<!-- The DOM component for pagination: a navbar with pages to select, along with
+	 "previous" and "next" buttons to move the range of pages along -->
 <nav>
 	<ul class="pagination">
-		<li{% if prevPage == -1 %} class="disabled"{% endif %}>
-			<a href="#" aria-label="Previous" class="diffpage" data-pagenum="{{ prevPage }}">
+		<li class="prev">
+			<a href="#" aria-label="Previous">
 				<span aria-hidden="true">&laquo;</span>
 			</a>
 		</li>
-		{% for pageNum in pageDisplays %}
-			{% if pageNum == curPage %}
-				<li class="active">
-					<span>{{ pageNum }} <span class="sr-only">(current)</span></span>
-				</li>
-			{% else %}
-				<li><a href="#" class="diffpage" data-pagenum="{{ pageNum }}">{{ pageNum }}</a></li>
-			{% endif %}
-		{% endfor %}
-		<li{% if nextPage == -1 %}class="disabled"{% endif %}>
-			<a href="#" aria-label="Next" class="diffpage" data-pagenum="{{ nextPage }}">
+		<li class="next">
+			<a href="#" aria-label="Next">
 				<span aria-hidden="true">&raquo;</span>
 			</a>
 		</li>
 	</ul>
 </nav>
+<!-- Go back to category selection -->
+<a href="/" role="button" class="btn btn-primary">Back</a>
 
 {% if error %}
+	<!-- This error message appears only if there are no relevant events -->
 	<div class="alert alert-danger" role="alert">{{ error }}</div>
 {% else %}
+	<!-- Each event consists of its name (a link to the event on Evenrbrite), logo, and description -->
 	{% for event in events %}
 		<div>
 			<h3><a href="{{ event.url }}" target="_blank">{{ event.name.text }}</a></h3>
@@ -41,43 +39,63 @@
 	{% endfor %}
 {% endif %}
 
+<!-- Pagination appears again at the bottom of the page -->
 <nav>
 	<ul class="pagination">
-		{% if prevPage == -1 %}
-			<li class="disabled">
-		{% else %}
-			<li>
-		{% endif %}
-				<a href="#" aria-label="Previous" class="diffpage" data-pagenum="{{ prevPage }}">
-					<span aria-hidden="true">&laquo;</span>
-				</a>
-			</li>
-		{% for pageNum in pageDisplays %}
-			{% if pageNum == curPage %}
-				<li class="active">
-					<span>{{ pageNum }} <span class="sr-only">(current)</span></span>
-				</li>
-			{% else %}
-				<li><a href="#" class="diffpage" data-pagenum="{{ pageNum }}">{{ pageNum }}</a></li>
-			{% endif %}
-		{% endfor %}
-		{% if nextPage == -1 %}
-			<li class="disabled">
-		{% else %}
-			<li>
-		{% endif %}
-				<a href="#" aria-label="Next" class="diffpage" data-pagenum="{{ nextPage }}">
-					<span aria-hidden="true">&raquo;</span>
-				</a>
-			</li>
+		<li class="prev">
+			<a href="#" aria-label="Previous">
+				<span aria-hidden="true">&laquo;</span>
+			</a>
+		</li>
+		<li class="next">
+			<a href="#" aria-label="Next">
+				<span aria-hidden="true">&raquo;</span>
+			</a>
+		</li>
 	</ul>
 </nav>
+<a href="/" role="button" class="btn btn-primary" style="margin-bottom:15px">Back</a>
+
 <script>
+	var paginationLimit = 5; // Number of pages to display to the user
+	var curPage = {{ curPage }}; // Current page number
+	var pageCount = {{ pageCount }}; // Total number of pages showing relevant events
+
+	// Calculate the first page in the range of pages to display
+	var firstPageDisplay = Math.max(paginationLimit * Math.floor((curPage - 1) / paginationLimit) + 1, 1)
+	// Calculate the last page in the range of pages to display
+	var lastPageDisplay = Math.min(firstPageDisplay + paginationLimit - 1, pageCount)
+	if (firstPageDisplay == 1) {
+		// No more previous ranges
+		$(".prev").addClass("disabled");
+	} else {
+		// Links that work in the pagination nav have data-pagenum attribute
+		$("[aria-label='Previous']").attr("data-pagenum", firstPageDisplay - paginationLimit);
+	}
+	if (lastPageDisplay == pageCount) {
+		// No more additional ranges
+		$(".next").addClass("disabled");
+	} else {
+		$("[aria-label='Next']").attr("data-pagenum", lastPageDisplay + 1);
+	}
+	for (var i = lastPageDisplay; i >= firstPageDisplay; i--) {
+		var toAdd;
+		if (i == curPage) {
+			// No link to page you are already on
+			toAdd = "<li class='active'><span>" + i + "<span class='sr-only'>(current)</span></span></li>";
+		} else {
+			toAdd = "<li><a href='#' data-pagenum='" + i + "'>" + i + "</a></li>";
+		}
+		$(".prev").after(toAdd);
+	}
+	// Maintain the currently selected categories in an array, categoryIds
 	var categoryIds = [];
 	{% for category in categories %}
 		categoryIds.push({{ category }});
 	{% endfor %}
-	$(".diffpage").click(function() {
+	// When user selects a different page of relevant events, redirect them by constructing the new url
+	// from categoryIds and the selected page number
+	$("[data-pagenum]").on("click", function() {
 		var targetPage = Number($(this).attr("data-pagenum"));
 		if (targetPage != -1) {
 			var params = {

@@ -1,3 +1,4 @@
+<!-- Template for front page, where user selects categories -->
 {% extends "categories/header.html" %}
 
 {% block title %} Select categories {% endblock %}
@@ -6,6 +7,7 @@
 <h1> Categories </h1>
 <h2> Select your top 3 event categories: </h2>
 {% if messages %}
+	<!-- If the user doesn't select 3 categories, an error message is displayed -->
 	{% for message in messages %}
 		<div class="alert alert-danger" role="alert">{{ message }}</div>
 	{% endfor %}

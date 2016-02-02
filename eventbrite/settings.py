@@ -72,6 +72,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'eventbrite.wsgi.application'
 
+# Use Local-memory caching to avoid repeated API calls for same page
 
 CACHES = {
     'default': {
@@ -89,6 +90,8 @@ DATABASES = {
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }
+
+# Configuration for deployment with Heroku
 
 DATABASES['default'] = dj_database_url.config()
 
@@ -131,6 +134,8 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.9/howto/static-files/
+
+# Settings allowing Heroku to collect static files
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 STATIC_ROOT = 'staticfiles'
