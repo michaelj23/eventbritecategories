@@ -5,3 +5,5 @@ psycopg2==2.6.1
 requests==2.9.1
 wheel==0.24.0
 whitenoise==2.0.6
+pylibmc==1.4.0
+django-pylibmc==0.5.0
