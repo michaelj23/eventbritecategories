@@ -43,8 +43,6 @@ def events(request):
 	}
 	if 'page' in request.GET:
 		parameters['page'] = request.GET['page']
-	else:
-		parameters['page'] = 1 # cache the first page more consistently by making its URL consistent
 	try:
 		response = requests.get(
 			'https://www.eventbriteapi.com/v3/events/search/',
