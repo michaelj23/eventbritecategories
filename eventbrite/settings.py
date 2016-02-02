@@ -28,10 +28,10 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-""" User must select this number of categories from the index page """
+# User must select this number of categories from the index page
 REQUIRED_NUM_CATEGORIES = 3
 
-""" Key for Eventbrite API """
+# Key for Eventbrite API
 API_KEY = '56UBOZLZ4CLCT7JWUQ76'
 
 
